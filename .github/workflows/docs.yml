@@ -1,22 +1,35 @@
-name: docs 
+name: Deploy to AWS Elastic Beanstalk
+
 on:
   push:
     branches:
-      - master 
       - main
-permissions:
-  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.x
-      - uses: actions/cache@v2
-        with:
-          key: ${{ github.ref }}
-          path: .cache
-      - run: pip install mkdocs-material 
-      - run: mkdocs gh-deploy --force
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+
+    - name: Create deployment package
+      run: |
+        # Zip all files excluding .git to avoid pushing version history
+        zip -r deploy.zip . -x "*.git*"
+
+    - name: Deploy to Elastic Beanstalk
+      uses: einaregilsson/beanstalk-deploy@v22
+      with:
+        aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        application_name: insurance-prediction-app
+        environment_name: insurance-prediction-env
+        version_label: "insurance-app-${{ github.sha }}"
+        region: eu-north-1
+        deployment_package: deploy.zip
