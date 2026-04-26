@@ -31,5 +31,5 @@ jobs:
         application_name: insurance-prediction-app
         environment_name: Insurance-prediction-env
         version_label: "insurance-app-${{ github.sha }}"
-        region: eu-north-1
+        region: us-east-1
         deployment_package: deploy.zip
